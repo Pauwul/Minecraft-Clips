@@ -1,57 +1,54 @@
-# pseudo code for how the python part will work
+import tkinter as tk
 
-# imports
-# import clips
+def generate_grid():
+    try:
+        rows = int(rows_entry.get())
+        columns = int(columns_entry.get())
+        
+        if rows <= 0 or columns <= 0:
+            result_label.config(text="Please enter positive numbers for rows and columns.", fg="red")
+            return
+        
+        grid = [['_' for _ in range(columns)] for _ in range(rows)]
+        result_label.config(text="Generated grid:", fg="black")
+        display_grid(grid)
+    except ValueError:
+        result_label.config(text="Please enter valid integers for rows and columns.", fg="red")
 
-# import wxpython
-# import pandas as pd
-from tkinter import *
-from tkinter import ttk
-root = Tk()
-frm = ttk.Frame(root, padding=10)
-frm.grid()
-ttk.Label(frm, text="Hello World!").grid(column=0, row=0)
-ttk.Button(frm, text="Quit", command=root.destroy).grid(column=1, row=0)
-root.mainloop()
-
-import random
-# Generate the config txt for every tile on the gui and resource
-
-# | 0 | 0 | 0 |
-# | 0 | x | 0 |
-# | 0 | 0 | 0 |
-
-def generate_file(file_path, rows, cols, probability):
-    with open(file_path, 'w') as file:
-        for _ in range(rows):
-            row = [random.randint(0, 1) if random.random() < probability else 0 for _ in range(cols)]
-            file.write(' '.join(map(str, row)) + '\n')
-
-
-def generateResourceMap(file_path, rows, cols, *resources):
-    resourceList = [ [column for column in range(4)] for row in range(4) ]
-    for i in range(0, 10):
-        for j in range(0,10):
-            resourceList.append(0)
-            if( resourceList[i-1][j-1] == 0 
-               and resourceList[i-1][j] == 0 
-               and resourceList[i-1][j+1] == 0 
-               and resourceList[i+1][j] == 0 
-               and resourceList[i+1][j+1] == 0 
-                ):
-                resourceList[i][j] = 1
-    print(resourceList)
-
-def generateMap():
+def display_grid(grid):
+    for widget in result_frame.winfo_children():
+        widget.destroy()
     
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            label = tk.Label(result_frame, text=grid[i][j], width=4, height=2, relief="ridge")
+            label.grid(row=i, column=j)
 
-# generateResourceMap()
+root = tk.Tk()
+root.title("Grid Generator")
 
-# UI Setup, call external functions to edit the GUI
+input_frame = tk.Frame(root)
+input_frame.pack(pady=10)
 
+rows_label = tk.Label(input_frame, text="Rows:")
+rows_label.grid(row=0, column=0, padx=5)
 
+rows_entry = tk.Entry(input_frame)
+rows_entry.grid(row=0, column=1, padx=5)
 
+columns_label = tk.Label(input_frame, text="Columns:")
+columns_label.grid(row=0, column=2, padx=5)
 
+columns_entry = tk.Entry(input_frame)
+columns_entry.grid(row=0, column=3, padx=5)
 
-# import the config
+generate_button = tk.Button(input_frame, text="Generate Grid", command=generate_grid)
+generate_button.grid(row=1, columnspan=4, pady=5)
 
+result_label = tk.Label(root, text="", fg="black")
+result_label.pack()
+
+result_frame = tk.Frame(root)
+result_frame.pack()
+
+root.mainloop()
