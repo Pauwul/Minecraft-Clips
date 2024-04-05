@@ -104,22 +104,20 @@
 ; ComputeMove ca sa calculeze pe ce bloc sa se miste
 
 (defrule ComputeMove
-    (goto ? ?xObj ?yObj)
+    (goto ?xObj ?yObj)
     (player ? ?x ?y)
-	(not (destination-reached 1))
-	(not (move $?))
+    (not (destination-reached 1))
+    (not (move $?))
     =>
-    (if (and (< ?x ?xObj) (eq ?y ?yObj))
+    (if (and (< ?x ?xObj) (eq ?y ?yObj) (not (obstacol (+ ?x 1) ?y)))
         then (assert (move (+ ?x 1) ?y))
-    else (if (or (> ?x ?xObj) (eq ?y ?yObj))
+    else (if (and (> ?x ?xObj) (eq ?y ?yObj) (not (obstacol (- ?x 1) ?y)))
         then (assert (move (- ?x 1) ?y))
-    else (if (or (eq ?x ?xObj) (> ?y ?yObj))
+    else (if (and (eq ?x ?xObj) (> ?y ?yObj) (not (obstacol ?x (- ?y 1))))
         then (assert (move ?x (- ?y 1)))
-    else (if (or (eq ?x ?xObj) (< ?y ?yObj))
+    else (if (and (eq ?x ?xObj) (< ?y ?yObj) (not (obstacol ?x (+ ?y 1))))
         then (assert (move ?x (+ ?y 1)))))))
-		
 )
-
 ; Move pentru miscare
 
 (defrule Move
