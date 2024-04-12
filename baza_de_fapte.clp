@@ -6,6 +6,7 @@
 ; )
 
 (deffacts fapte
+	(grid 5)
     (pozitie 1 1 1)
     (pozitie 1 1 2)
     (pozitie 1 1 3)
@@ -17,9 +18,18 @@
     (pozitie 1 3 3)    
     (inamic 1 2 2)
     (lava 1 2 3)
-    (player 1 1 1)
+    (player 1 5 5)
+	(obstacol 1 2 1)
     ;(goto 1 3 3)
-	(iesire 1 5 5)
+    
+	(diamant 3 3 3)
+    (intrare 1 3 3)
+    (intrare 2 3 3)
+    
+    (iesire 3 1 1)
+    (iesire 2 1 1)
+    (iesire 1 1 1)
+    
 )
 
 ; (defglobal ?*len* 3)
@@ -103,21 +113,58 @@
 ; REGULI PENTRU MISCARE
 ; ComputeMove ca sa calculeze pe ce bloc sa se miste
 
-(defrule ComputeMove
-    (goto ?xObj ?yObj)
+(defrule ComputeMoveRight
+	(grid ?dim)
+    (goto ? ?xObj&:(<= ?xObj ?dim) ?yObj&:(<= ?yObj ?dim))
     (player ? ?x ?y)
     (not (destination-reached 1))
     (not (move $?))
+	(not (obstacol ? =(+ ?x 1) ?y))
+	(not (> =(+ ?x 1) ?dim)) 
     =>
-    (if (and (< ?x ?xObj) (eq ?y ?yObj) (not (obstacol (+ ?x 1) ?y)))
-        then (assert (move (+ ?x 1) ?y))
-    else (if (and (> ?x ?xObj) (eq ?y ?yObj) (not (obstacol (- ?x 1) ?y)))
-        then (assert (move (- ?x 1) ?y))
-    else (if (and (eq ?x ?xObj) (> ?y ?yObj) (not (obstacol ?x (- ?y 1))))
-        then (assert (move ?x (- ?y 1)))
-    else (if (and (eq ?x ?xObj) (< ?y ?yObj) (not (obstacol ?x (+ ?y 1))))
-        then (assert (move ?x (+ ?y 1)))))))
+    (if (< ?x ?xObj)
+        then (assert (move (+ ?x 1) ?y)))
 )
+
+(defrule ComputeMoveLeft
+	(grid ?dim)
+    (goto ? ?xObj&:(<= ?xObj ?dim) ?yObj&:(<= ?yObj ?dim))    
+	(player ? ?x ?y)
+    (not (destination-reached 1))
+    (not (move $?))
+	(not (obstacol ? =(- ?x 1) ?y))
+	(not (< =(- ?x 1) =(- ?dim ?dim)))
+    =>
+    (if (> ?x ?xObj)
+        then (assert (move (- ?x 1) ?y)))
+)
+
+(defrule ComputeMoveUp
+	(grid ?dim)
+    (goto ? ?xObj&:(<= ?xObj ?dim) ?yObj&:(<= ?yObj ?dim))    
+	(player ? ?x ?y)
+    (not (destination-reached 1))
+    (not (move $?))
+	(not (obstacol ? ?x =(- ?y 1)))
+	(not (> =(+ ?y 1) ?dim))
+    =>
+    (if (> ?y ?yObj)
+        then (assert (move ?x (- ?y 1))))
+)
+
+(defrule ComputeMoveDown
+	(grid ?dim)
+    (goto ? ?xObj&:(<= ?xObj ?dim) ?yObj&:(<= ?yObj ?dim))    
+	(player ? ?x ?y)
+    (not (destination-reached 1))
+    (not (move $?))
+	(not (obstacol ? ?x =(+ ?y 1)))
+	(not (< =(- ?y 1) =(- ?dim ?dim)))
+    =>
+    (if (< ?y ?yObj)
+        then (assert (move ?x (+ ?y 1))))
+)
+
 ; Move pentru miscare
 
 (defrule Move
@@ -127,6 +174,12 @@
     =>
     (retract ?player ?adr)
     (assert (player ?lvl ?dx ?dy))
+)
+
+(defrule GameOver
+	(declare (salience -1000))
+	=>
+	(printout t "you lost" crlf)
 )
 
 ; Destination-reached pentru a verifica daca a ajuns la destinatie
@@ -140,16 +193,61 @@
 	(assert (destination-reached 1))
 )
 
-; ]
-; (defrule ComputeDirection
-;     (declare (salience 10))
-;     (goto 1 ?xObj ?yObj)
-;     (player 1 ?x ?y)
-;     (test (neq(?x ?xObj)))
-;     =>
-;     (retract ?adrDx)
-;     (retract ?adrDy)
-;     (assert (move-diag (+ ?x 1) )
-; )
-; move to the right ( x + 1 )
 
+; REGULI CARE FAC PLAYERUL SA INTRE/IASA SI SA RIDICE DIAMANTUL
+
+(defrule terminare-joc 
+	?adr1 <- (player 1 ?x_player ?y_player)
+    (iesire 1 ?x_iesire ?y_iesire)
+	(destination-reached 1)
+	=>
+	(if (and (eq ?y_player ?y_iesire 1) (eq ?x_player ?x_iesire 1))
+	then
+		(printout t "YOU WON!")
+	)
+)
+(defrule intrare (declare (salience 9))
+	
+    ?adr1 <- (player ?nivel_player ?x_player ?y_player)
+    (intrare ?nivel_intrare ?x_intrare ?y_intrare)
+    (iesire ?next_level ?x_iesire ?y_iesire&:
+								(eq ?next_level (+ ?nivel_intrare 1)))
+    (diamant 3 ?x_diamant ?y_diamant)
+    ?adr2 <- (destination-reached 1)
+    =>
+    (if (and (eq ?nivel_player ?nivel_intrare) (eq ?x_player ?x_intrare) (eq ?y_player ?y_intrare))
+        then
+			(retract ?adr1 ?adr2)
+			(assert (player (+ ?nivel_player 1) ?x_iesire ?y_iesire))
+    )
+)
+
+(defrule iesire (declare (salience 9))
+	
+    ?adr1 <- (player ?nivel_player ?x_player ?y_player)
+	(iesire ?nivel_iesire ?x_iesire ?y_iesire)
+    (intrare ?prev_level ?x_intrare ?y_intrare&:
+								(eq ?prev_level (- ?nivel_iesire 1)))
+    (not (diamant ? ? ?))
+    ?adr2 <- (destination-reached 1)
+    =>
+	
+    (if (and (eq ?nivel_player ?nivel_iesire) (eq ?x_player ?x_iesire) (eq ?y_player ?y_iesire))
+        then
+			(retract ?adr1 ?adr2)
+			(assert (player (- ?nivel_player 1) ?x_intrare ?y_intrare))
+    )
+)
+
+(defrule minare (declare (salience 9))
+	
+    (player ?nivel_player ?x_player ?y_player)
+    ?adr1 <- (diamant ?nivel_diamant ?x_diamant ?y_diamant)
+    ?adr2 <- (destination-reached 1)
+    =>
+    (if (eq ?nivel_player ?nivel_diamant)
+        then
+			(retract ?adr1 ?adr2)
+			(assert (diamant-minat 1))
+    )
+)
