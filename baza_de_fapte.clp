@@ -176,6 +176,17 @@
     (assert (player ?lvl ?dx ?dy))
 )
 
+(defrule MoveAndKill
+	(declare (salience 10))
+    ?player <- (player ?lvl ?xP ?yP)
+	?adr <- (move ?dx ?dy)
+	?enemy <- (inamic ?lvl ?dx ?dy)
+	(not (destination-reached 1))
+    =>
+    (retract ?player ?adr ?enemy)
+    (assert (player ?lvl ?dx ?dy))
+)
+
 (defrule GameOver
 	(declare (salience -1000))
 	=>
