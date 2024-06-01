@@ -18,7 +18,7 @@ class GameGrid:
         self.canvas_size = 500
         self.cell_size = self.canvas_size / self.grid_size
         self.canvas = Canvas(self.root, width=self.canvas_size, bg="gray20", height=self.canvas_size)
-        bg_image = Image.open("D://Facultate//Anul 4//Semestrul 2//SBCpr//python//background.png")
+        bg_image = Image.open("./background.png")
         bg_image = ImageTk.PhotoImage(bg_image)
         self.root.configure(bg="black")
         # self.canvas.create_image(0, 0, anchor="nw", fill="brown")
