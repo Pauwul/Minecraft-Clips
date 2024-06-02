@@ -50,8 +50,18 @@ class GameGrid:
         self.submit_button = Button(self.root, text="Add Entity", bg="gray20", command=self.add_fact, fg="white")
         self.submit_button.place(x=540, y=540)
 
+        # Button to close window
+        self.close = Button(self.root, text="Close", bg="gray20", fg="white", command=self.close_window)
+        self.close.place(x=640, y=540)
+
+
     def set_start(self):
         self.start_flag = 1
+    
+    
+    def close_window(self):
+        self.root.destroy()
+
 
     def add_fact(self):
         # Assert the fact into the CLIPS environment
@@ -149,7 +159,6 @@ def update_fact_text(env, fact_text):
     for fact in env.facts():
         fact_text.insert('end', str(fact) + '\n')
 
-
 def main():
     root = Tk()
     root.title("Game")
@@ -176,7 +185,7 @@ def main():
         root.update()  # Update the GUI without blocking
 
     if game_grid.start_flag == 1:
-        while True:
+        while True and game_grid.start_flag == 1:
             env.run(1)  # Run a single step in the CLIPS environment
             entities = get_entities(env)
             current_level = get_player_level(entities)
@@ -189,9 +198,10 @@ def main():
             time.sleep(0.1)
             if game_status:
                 time.sleep(10000000)  # Display the message for one second
+
                 break  # Exit the loop after the delay
 
-        root.destroy()  # Close the application window
+    root.destroy()  # Close the application window
 
 
 if __name__ == '__main__':
