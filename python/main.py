@@ -196,10 +196,10 @@ def main():
             update_fact_text(env, fact_text)
             root.update()  # Update the GUI without blocking
             time.sleep(0.1)
-            if game_status:
-                time.sleep(10000000)  # Display the message for one second
+            # if game_status:
+                # time.sleep(10000000)  # Display the message for one second
 
-                break  # Exit the loop after the delay
+                # break  # Exit the loop after the delay
 
     root.destroy()  # Close the application window
 
