@@ -48,11 +48,11 @@ class GameGrid:
 
         # Button to submit fact
         self.submit_button = Button(self.root, text="Add Entity", bg="gray20", command=self.add_fact, fg="white")
-        self.submit_button.place(x=540, y=540)
+        self.submit_button.place(x=540, y=530)
 
         # Button to close window
         self.close = Button(self.root, text="Close", bg="gray20", fg="white", command=self.close_window)
-        self.close.place(x=640, y=540)
+        self.close.place(x=640, y=530)
 
 
     def set_start(self):
